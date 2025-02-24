@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua to Raw Link</title>
+</head>
+<body>
+    <h2>Enter Lua Code</h2>
+    <textarea id="luaCode" rows="5" cols="40">print("hi")</textarea>
+    <br><br>
+    <label>Filename:</label>
+    <input type="text" id="fileName" placeholder="Enter filename" value="script.lua">
+    <br><br>
+    <button onclick="generateRaw()">Generate Raw Link</button>
+    <br><br>
+    <a id="rawLink" style="display:none;" download>Download Raw File</a>
+
+    <script>
+        function generateRaw() {
+            let code = document.getElementById("luaCode").value;
+            let fileName = document.getElementById("fileName").value.trim() || "script.lua";
+            
+            if (!fileName.endsWith(".lua")) {
+                fileName += ".lua"; // Ensure the filename ends with .lua
+            }
+
+            let blob = new Blob([code], { type: "text/plain" });
+            let url = URL.createObjectURL(blob);
+            
+            let link = document.getElementById("rawLink");
+            link.href = url;
+            link.download = fileName; // Set the custom filename
+            link.style.display = "inline";
+            link.innerText = `Download ${fileName}`;
+        }
+    </script>
+</body>
+</html>
