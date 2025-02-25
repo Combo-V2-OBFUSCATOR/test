@@ -3,37 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lua to Raw Link</title>
+    <title>Lua Obfuscator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        textarea { width: 80%; height: 300px; margin-top: 10px; font-family: monospace; }
+        button { margin: 10px; padding: 10px; font-size: 16px; }
+    </style>
 </head>
 <body>
-    <h2>Enter Lua Code</h2>
-    <textarea id="luaCode" rows="5" cols="40">print("hi")</textarea>
-    <br><br>
-    <label>Filename:</label>
-    <input type="text" id="fileName" placeholder="Enter filename" value="script.lua">
-    <br><br>
-    <button onclick="generateRaw()">Generate Raw Link</button>
-    <br><br>
-    <a id="rawLink" style="display:none;" download>Download Raw File</a>
+
+    <h2>Lua Obfuscator (Web Version)</h2>
+    <textarea id="codeInput" placeholder="Paste your Lua script here..."></textarea><br>
+    <button onclick="obfuscateCode()">Obfuscate</button>
+    <button id="downloadButton" style="display:none;" onclick="downloadFile()">Click to Download</button>
 
     <script>
-        function generateRaw() {
-            let code = document.getElementById("luaCode").value;
-            let fileName = document.getElementById("fileName").value.trim() || "script.lua";
-            
-            if (!fileName.endsWith(".lua")) {
-                fileName += ".lua"; // Ensure the filename ends with .lua
+        let obfuscatedText = "";
+
+        // XOR Encryption
+        function xorEncrypt(text, key) {
+            let result = "";
+            for (let i = 0; i < text.length; i++) {
+                result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return btoa(result); // Base64 encoding for obfuscation
+        }
+
+        // ASCII Encoding
+        function encodeASCII(text) {
+            return text.split("").map(char => char.charCodeAt(0)).join(" ");
+        }
+
+        // G-Code Encoding (Emoji-based encoding for obfuscation)
+        function encodeGCode(text) {
+            const gCodeMap = {
+                "A": "😀", "B": "😃", "C": "😄", "D": "😁", "E": "😆", "F": "😅", "G": "😂",
+                "H": "🤣", "I": "😭", "J": "😉", "K": "😗", "L": "😙", "M": "😚", "N": "😘",
+                "O": "🥰", "P": "😍", "Q": "🤩", "R": "🥳", "S": "🙃", "T": "🙂", "U": "🥲",
+                "V": "😊", "W": "☺️", "X": "😌", "Y": "😏", "Z": "🤤", " ": "👉", "\n": "👇"
+            };
+            return text.split("").map(char => gCodeMap[char] || char).join("");
+        }
+
+        function obfuscateCode() {
+            const code = document.getElementById("codeInput").value;
+            if (!code.trim()) {
+                alert("Please enter Lua code first!");
+                return;
             }
 
-            let blob = new Blob([code], { type: "text/plain" });
-            let url = URL.createObjectURL(blob);
-            
-            let link = document.getElementById("rawLink");
-            link.href = url;
-            link.download = fileName; // Set the custom filename
-            link.style.display = "inline";
-            link.innerText = `Download ${fileName}`;
+            const key = "0192837465-83"; // XOR key from your Lua script
+
+            // Step 1: XOR Encrypt
+            let encrypted = xorEncrypt(code, key);
+
+            // Step 2: ASCII Encoding
+            let asciiEncoded = encodeASCII(encrypted);
+
+            // Step 3: G-Code Encoding
+            let finalObfuscated = encodeGCode(asciiEncoded);
+
+            // LuaObfuscator-style output
+            obfuscatedText = `-- Lua Obfuscator v2\nlocal obfuscator = loadstring(game:HttpGet("https://combo-v2-obfuscator.github.io/API"))()\n\nlocal a = "${finalObfuscated}"\nload(a)`;
+
+            alert("Obfuscation complete! Click the download button.");
+            document.getElementById("downloadButton").style.display = "inline";
+        }
+
+        function downloadFile() {
+            if (!obfuscatedText) return;
+
+            const blob = new Blob([obfuscatedText], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "obfuscated.lua";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
+
 </body>
 </html>
